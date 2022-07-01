@@ -205,12 +205,13 @@ public class JavaStudyApplication {
 
 ### 步骤一：自定义 `HttpServletRequest`
 
-这里我们的思路时，在构造方法中将原 `HttpServletRequest request` 中的 body 流保存在 byte[] 类型的属性中，因为拦截器中获取请求体，和 Controller 中就的 `@RequestBody` 获取请求体都是通过 `getInputStream()` 获取的，所以我们重写`getInputStream()` ，每此调用该方法都从 `byte[] body` 属性中获取，这样就保证了多次调用该方法也可以获取到流。
+这里我们的思路时，在构造方法中将原 `HttpServletRequest request` 中的 body 流保存在 byte[] 类型的属性中，因为拦截器中获取请求体，和 Controller 中的 `@RequestBody` 获取请求体都是通过  `HttpServletRequest request`的 `getInputStream()` 获取的，所以我们重写`getInputStream()` ，每此调用该方法都从 `byte[] body` 属性中获取，这样就保证了多次调用该方法也可以获取到流。
 
 ```java
 public class MyServletRequestWrapper extends HttpServletRequestWrapper {
     private byte[] body;
     
+    // 将流保存在byte[]类型的属性中
     public MyServletRequestWrapper(HttpServletRequest request) {
         super(request);
 
@@ -225,7 +226,7 @@ public class MyServletRequestWrapper extends HttpServletRequestWrapper {
         }
     }
 
-
+	// 重写getInputStream() 方法，使其从 byte[] body 属性中获取流
     @Override
     public ServletInputStream getInputStream() throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(body);
@@ -262,9 +263,11 @@ public class MyServletRequestWrapper extends HttpServletRequestWrapper {
 }
 ```
 
-### 步骤二：在 Filter 中替换原`HttpServletRequest`
+### 步骤二：在 Filter 中替换原 `HttpServletRequest`
 
-这里的操作就是将原来的 `ServletRequest request` 替换为我们的 `HttpServletRequestWrapper` 子类。
+这里的操作就是将原来的 `HttpServletRequest request` 替换为我们刚刚写的他的子类`HttpServletRequestWrapper` 。
+
+> 这里做了一些判断，使我们只将 Json 格式的请求体，转成我们的子类，如果你知道你过滤的请求体使什么类型的，可以不做这些判断直接将 `ServletRequest request` 转成 `HttpServletRequestWrapper`  然后放行即可。
 
 ```java
 @Override
@@ -278,6 +281,7 @@ public void doFilter(ServletRequest request, ServletResponse response, FilterCha
 
     // 该方法处理 POST请求并且contentType为application/json格式的
     if (HttpMethod.POST.name().equalsIgnoreCase(method) && StrUtil.isNotEmpty(contentType) && contentType.contains(MediaType.APPLICATION_JSON_VALUE)) {
+        // 强转
         MyServletRequestWrapper myServletRequestWrapper = new MyServletRequestWrapper(httpServletRequest);
         httpServletRequest = myServletRequestWrapper;
     }
