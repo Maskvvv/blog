@@ -201,11 +201,11 @@ public class JavaStudyApplication {
 
 ## 4.1 自定义 HttpServletRequest
 
-有时候我们希望在拦截其中对请求的请求体做一些处理后，将处理过的请求体在放回 request 中，但是由于流的特点能读一次，导致拦截器中读取完毕后，Controller 中就的 `@RequestBody` 就读取不到了，所以我们可以创建一个 `HttpServletRequest` 的子类，并重写其 `getInputStream()` 方法，使得请求体的流可以重复调用，`HttpServletRequestWrapper` 就可以满足我们的需求。
+有时候我们希望在拦截器中对请求的请求体做一些处理后，将处理过的请求体在放回 request 中，但是由于流的特点能读一次，导致拦截器中读取完毕后，Controller 中就的 `@RequestBody` 就读取不到了，所以我们可以创建一个 `HttpServletRequest` 的子类，并重写其 `getInputStream()` 方法，使得请求体的流可以重复调用，`HttpServletRequestWrapper` 就可以满足我们的需求。
 
 ### 步骤一：自定义 `HttpServletRequest`
 
-这里我们的思路时，在构造方法中将原 `HttpServletRequest request` 中的 body 流保存在 byte[] 类型的属性中，因为拦截其中获取请求体，和 Controller 中就的 `@RequestBody` 获取请求体都是通过 `getInputStream()` 获取的，所以我们重写`getInputStream()` ，每此调用该方法都从 `byte[] body` 属性中获取，这样就保证了多次调用该方法也可以获取到流。
+这里我们的思路时，在构造方法中将原 `HttpServletRequest request` 中的 body 流保存在 byte[] 类型的属性中，因为拦截器中获取请求体，和 Controller 中就的 `@RequestBody` 获取请求体都是通过 `getInputStream()` 获取的，所以我们重写`getInputStream()` ，每此调用该方法都从 `byte[] body` 属性中获取，这样就保证了多次调用该方法也可以获取到流。
 
 ```java
 public class MyServletRequestWrapper extends HttpServletRequestWrapper {
@@ -286,9 +286,9 @@ public void doFilter(ServletRequest request, ServletResponse response, FilterCha
 }
 ```
 
-### 步骤三：在拦截其中使用
+### 步骤三：在拦截器中使用
 
-拦截其中直接将 `HttpServletRequest request` 强转为我们的 `HttpServletRequestWrapper` 子类，然后使用即可。
+拦截器中直接将 `HttpServletRequest request` 强转为我们的 `HttpServletRequestWrapper` 子类，然后使用即可。
 
 这里我做的业务逻辑就是，将 body 中的被 Base64 编码的属性值转换为原值，在放回去。
 
