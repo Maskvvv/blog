@@ -215,10 +215,12 @@ docker tag 镜像id 新景象的名称:版本
 ```sh
 # 1.运行容器
 # 简单操作
-docker run 容器的标识|容器名称[:tag]
+docker run 镜像的标识|镜像名称[:tag]
 # 常用的参数（常用）
-docker run -d|-it -p 宿主机端口:容器端口 --name 容器名称 容器标识|容器名称[:tag] /bin/bash
+docker run -it -p 宿主机端口:容器端口 --name 容器名称 容器标识|容器名称[:tag] /bin/bash
+docker run -d --restart=always -p 宿主机端口:容器端口 -p 宿主机端口2:容器端口2  --name 容器名称 镜像标识|镜像名称[:tag]
 - # -d： 代表后台运行容器
+- # --restart=always 默认容器总是启动
 - # -p 宿主机端口:容器端口：为了映射当前Linux的端口和容器的端口
 - # --name 容器的名称：指定容器的名称
 - # -i： 交互式操作。
@@ -423,6 +425,7 @@ docker run -d -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -v mysqldata
 # 容器数据默认保存在 /var/lib/mysql 
 
 # 指定指定配置文件
+docker run --name canal-mysql -p 33061:3306 -v /root/canal/mysql:/etc/mysql/conf.d -e MYSQL_ROOT_PASSWORD=root -d mysql:8.0
 docker run -d -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -v mysqldata:/var/lib/mysql  -v mysqlconf:/etc/mysql mysql:5.5.62
 # 容器配置文件默认保存在 /etc/mysql
 ```
@@ -500,6 +503,12 @@ docker run -d --name kibana --net elastic_search -e "ELASTICSEARCH_HOSTS=http://
 # 加载配置文件启动
 docker run -d --name kibana --net elastic_search -v kibanaconf:/usr/share/kibana/config -p 5601:5601 kibana:6.8.0
 # 启动后修改 kibana.yml 即可
+```
+
+### 7.7 rabbitmq
+
+```shell
+docker run -d -p 15672:15672 -p 5672:5672 --restart=always --name rabbitmq-delay maskvvv/rabbitmq-delay-queue
 ```
 
 ## 八、Dockerfile 自定义镜像
