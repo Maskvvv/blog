@@ -1,4 +1,4 @@
-# 一、@Autowired
+# 一、`@Autowired`
 
 ## 1.1 构造方法
 
@@ -131,9 +131,7 @@ public class MovieRecommender {
 }
 ```
 
-默认情况下，如果找不到可用的需要注入的类型 bean 是，自动 autowired 就会失败。对于 array、collection 或者
-
- map 来说至少有一个匹配的元素才不会报错。
+默认情况下，如果找不到可用的需要注入的类型 bean 是，自动 autowired 就会失败。对于 array、collection 或者 map 来说至少有一个匹配的元素才不会报错。
 
 如果你想改变这种默认情况，让矿建跳过着各种不满足的注入点，你可以通过将 @Autowired 的 required 设置为 false，将它标记为非必须。
 
@@ -151,4 +149,116 @@ public class SimpleMovieLister {
 }
 ```
 
-> 当一个方法被标记为 non-required 时，如果没有
+当一个方法被标记为 non-required 时，如果他的参数依赖没有人使用，那么改方法将不会被调用；当一个字段被标记为 non-required 时，那么他将不会被填充，只会保存他的默认值
+
+## 1.6 Java 8’s `java.util.Optional`
+
+你也可以通过  Java 8’s `java.util.Optional` 来表示依赖的 non-required。
+
+```java
+public class SimpleMovieLister {
+
+    @Autowired
+    public void setMovieFinder(Optional<MovieFinder> movieFinder) {
+        ...
+    }
+}
+```
+
+## 1.7 `@Nullable`
+
+在 Spring 5.0 中你可以通过 `@Nullable` 注解来表示依赖的 non-required。
+
+```java
+public class SimpleMovieLister {
+
+    @Autowired
+    public void setMovieFinder(@Nullable MovieFinder movieFinder) {
+        ...
+    }
+}
+```
+
+## 1.8 其他
+
+你可以通过 `@Autowired` 来获取一些众所周知的接口或者他们的拓展接口：`BeanFactory`, `ApplicationContext`, `Environment`, `ResourceLoader`, `ApplicationEventPublisher`, and `MessageSource`；拓展接口： `ConfigurableApplicationContext` 或 `ResourcePatternResolver`。
+
+```java
+public class MovieRecommender {
+
+    @Autowired
+    private ApplicationContext context;
+
+    public MovieRecommender() {
+    }
+
+    // ...
+}
+```
+
+> `@Autowired`，`@Inject`，`@Value` 和 `@Resource` 注解都是通过 Spring 的 `BeanPostProcessor` 实现的，这意味着您不能在自己的 `BeanPostProcessor` 或 `BeanFactoryPostProcessor` 类型(如果有的话)中应用这些注解，这些自定义的类型必须通过 XML 或者 Spring @Bean 方法连接起来
+
+# 二、`@Primary`
+
+因为通过类型自动装配可能会存在多个候选的 bean，所以控制 bean 的选择过程就十分有必要了。其中一种实现方式就是通过 Spring 的 `@Primary` 注解。 当单值依赖有多个候选 bean 时， `@Primary`  可以指示一个特殊的 bean 当作依赖。如果在多个候选 bean 中恰好只有一个 primary bean，那么他就会成为自动装配的值。
+
+```java
+@Configuration
+public class MovieConfiguration {
+
+    @Bean
+    @Primary
+    public MovieCatalog firstMovieCatalog() { ... }
+
+    @Bean
+    public MovieCatalog secondMovieCatalog() { ... }
+
+    // ...
+}
+
+public class MovieRecommender {
+
+    @Autowired
+    private MovieCatalog movieCatalog;
+
+    // ...
+}
+```
+
+上面这个例子中 `MovieRecommender` 中的 `movieCatalog` 会自动装配 `firstMovieCatalog`。
+
+# 三、使用限定符微调基于注释的自动装配
+
+当通过类型自动装配存在多个候选 bean，但是只有一个 主要的候选bean是，`@Primary` 是非常有效的方式。当你需要更多的控制 bean 的选择过程时，你可以通过 Spring 提供的 `@Qualifier` 注解实现。您可以将限定符值与特定的参数相关联，缩小类型匹配集，以便为每个参数选择特定的 bean。
+
+```java
+public class MovieRecommender {
+
+    @Autowired
+    @Qualifier("main")
+    private MovieCatalog movieCatalog;
+
+    // ...
+}
+```
+
+你可以指定 `@Qualifier` 注解在构造方法或者普通方法的单个参数上。
+
+```java
+public class MovieRecommender {
+
+    private MovieCatalog movieCatalog;
+
+    private CustomerPreferenceDao customerPreferenceDao;
+
+    @Autowired
+    public void prepare(@Qualifier("main") MovieCatalog movieCatalog,
+            CustomerPreferenceDao customerPreferenceDao) {
+        this.movieCatalog = movieCatalog;
+        this.customerPreferenceDao = customerPreferenceDao;
+    }
+
+    // ...
+}
+```
+
