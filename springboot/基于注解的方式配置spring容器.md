@@ -18,7 +18,7 @@ Wire
 }
 ```
 
-> 在 Spring 的 4.3 版本中，如果你的目标 bean 中只有一个构造方法，那个 @Autowired将不再必须添加。但是如果有多个构造方法，为了让 Spring 知道该用那个，你必须通过 @Autowired 指定一个构造方法
+> 从 Spring 的 4.3 版本开始，如果你的目标 bean 中只有一个构造方法，那个 @Autowired将不再必须添加。但是如果有多个构造方法，为了让 Spring 知道该用那个，你必须通过 @Autowired 指定一个构造方法
 
 ## 1.2 setter 方法
 
@@ -167,7 +167,7 @@ public class SimpleMovieLister {
 
 ## 1.7 `@Nullable`
 
-在 Spring 5.0 中你可以通过 `@Nullable` 注解来表示依赖的 non-required。
+从 Spring 5.0 开始你可以通过 `@Nullable` 注解来表示依赖的 non-required。
 
 ```java
 public class SimpleMovieLister {
@@ -262,3 +262,4 @@ public class MovieRecommender {
 }
 ```
 
+> `@Autowired` 注解可以应用在 字段、构造方法、多参数方法中，并且可以通过 qualifier 注解缩小装配的范围。与之相比，`@Resourse` 注解只能被用在 字段和单参数 setter 方法中。所以，如果你需要注入目标是 构造方法或者是多参数方法，那么建议 `@Autowired` 配合 qualifier 注解使用。
