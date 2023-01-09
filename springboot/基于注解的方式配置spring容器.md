@@ -263,3 +263,43 @@ public class MovieRecommender {
 ```
 
 > `@Autowired` 注解可以应用在 字段、构造方法、多参数方法中，并且可以通过 qualifier 注解缩小装配的范围。与之相比，`@Resourse` 注解只能被用在 字段和单参数 setter 方法中。所以，如果你需要注入目标是 构造方法或者是多参数方法，那么建议 `@Autowired` 配合 qualifier 注解使用。
+
+# 四、使用泛型作为自动装配的限定词
+
+除了使用 `@Qualifier` 注解作为限定词外，还可以使用 java 的反省类型作为一个隐式的限定词形式。
+
+```java
+@Configuration
+public class MyConfiguration {
+
+    @Bean
+    public StringStore stringStore() {
+        return new StringStore();
+    }
+
+    @Bean
+    public IntegerStore integerStore() {
+        return new IntegerStore();
+    }
+}
+```
+
+假设上面的两个 bean 实现了一个泛型接口（比如，分别实现了 `Store<String>` 和 `Store<Integer>` ），当你通过 `@Autowired` 注入 `Store` 时，泛型就会被当作一个限定词。
+
+```java
+@Autowired
+private Store<String> s1; // <String> qualifier, injects the stringStore bean
+
+@Autowired
+private Store<Integer> s2; // <Integer> qualifier, injects the integerStore bean
+```
+
+当然泛型的的限定词作用也可以应用在 lists、Map 和 array 上。
+
+```java
+// Inject all Store beans as long as they have an <Integer> generic
+// Store<String> beans will not appear in this list
+@Autowired
+private List<Store<Integer>> s;
+```
+
