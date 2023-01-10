@@ -303,3 +303,36 @@ private Store<Integer> s2; // <Integer> qualifier, injects the integerStore bean
 private List<Store<Integer>> s;
 ```
 
+# 五、通过 `@Resoure` 注入
+
+Spring 支持在字段或者 bean 属性的 setter 方法上通过 `@Resource` （`javax.annotation.Resource`）注解注入它们。
+
+`@Resource` 有一个 name 属性，在默认情况下，Spring 会解析该值作为需要注入的 bean 的名字。
+
+```java
+public class SimpleMovieLister {
+
+    private MovieFinder movieFinder;
+
+    @Resource(name="myMovieFinder") 
+    public void setMovieFinder(MovieFinder movieFinder) {
+        this.movieFinder = movieFinder;
+    }
+}
+```
+
+如果 name 属性没有被显式指定，则会使用字段名或者使用属性的 setter 方法的属性名。
+
+```java
+public class SimpleMovieLister {
+
+    private MovieFinder movieFinder;
+
+    @Resource
+    public void setMovieFinder(MovieFinder movieFinder) {
+        this.movieFinder = movieFinder;
+    }
+}
+```
+
+ 
