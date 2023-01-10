@@ -335,4 +335,128 @@ public class SimpleMovieLister {
 }
 ```
 
- 
+```JAVA
+public class MovieRecommender {
+
+    @Resource
+    private CustomerPreferenceDao customerPreferenceDao;
+
+    @Resource
+    private ApplicationContext context; 
+
+    public MovieRecommender() {
+    }
+
+    // ...
+}
+```
+
+# 六、`@Value`
+
+`@Value` 通常被用作注入外部的属性。
+
+```java
+@Component
+public class MovieRecommender {
+
+    private final String catalog;
+
+    public MovieRecommender(@Value("${catalog.name}") String catalog) {
+        this.catalog = catalog;
+    }
+}
+```
+
+```java
+@Configuration
+@PropertySource("classpath:application.properties")
+public class AppConfig { }
+```
+
+`application.properties` 如下所示：
+
+```properties
+catalog.name=MovieCatalog
+```
+
+此时 `catalog` 的值为 `MovieCatalog`。
+
+Spring 默认情况下提供了一个宽松的嵌入式解析器。他将会尝试解析属性值，如果不能解析，则将注入属性名（例如 `${ catalog.name }`）作为值。如果你想保持严格控制不存在的值，你可以声明一个 `PropertySourcesPlaceholderConfigurer` bean。
+
+```java
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public static PropertySourcesPlaceholderConfigurer propertyPlaceholderConfigurer() {
+        return new PropertySourcesPlaceholderConfigurer();
+    }
+}
+```
+
+> 注意声明 `PropertySourcesPlaceholderConfigurer`，`@Bean` 的方法必须是 static。
+
+在使用上面的配置后，如果有任何 `${}` 占位符解析失败都会导致 Spring 初始化失败。还可以使用 setPlaceholderPrefix、 setPlaceholderAffix 或 setValueMolecular ator 等方法来定制占位符。
+
+> `PropertySourcesPlaceholderConfigurer` 默认从 `application.properties` 和 `application.yml` 文件中读取属性值。
+
+Spring 内置的转换器支持简单的类型自动转换（比如：转换为 Integer 或者 int）。多个逗号分隔的值将会被自动转换为 String 类型的 Array 或者集合。
+
+你可以通过下面的这种方式提供一个默认值：
+
+```java
+@Component
+public class MovieRecommender {
+
+    private final String catalog;
+
+    public MovieRecommender(@Value("${catalog.name:defaultCatalog}") String catalog) {
+        this.catalog = catalog;
+    }
+}
+```
+
+Spring `BeanPostProcessor` 在后台使用 `ConversionService` 来处理将 `@Value` 中的字符串值转换为目标类型的过程。如果想为自己的自定义类型提供转换支持，你可以提供一个你自己的 `ConversionService` bean实例。
+
+```java
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public ConversionService conversionService() {
+        DefaultFormattingConversionService conversionService = new DefaultFormattingConversionService();
+        conversionService.addConverter(new MyCustomConverter());
+        return conversionService;
+    }
+}
+```
+
+当 `@Value` 包含一个 [`SpEL` 表达式](https://docs.spring.io/spring-framework/docs/5.3.24/reference/html/core.html#expressions)时，该值将在运行时动态计算。
+
+```java
+@Component
+public class MovieRecommender {
+
+    private final String catalog;
+
+    public MovieRecommender(@Value("#{systemProperties['user.catalog'] + 'Catalog' }") String catalog) {
+        this.catalog = catalog;
+    }
+}
+```
+
+SPEL 还支持使用更复杂的数据结构。
+
+```java
+@Component
+public class MovieRecommender {
+
+    private final Map<String, Integer> countOfMoviesPerCatalog;
+
+    public MovieRecommender(
+            @Value("#{{'Thriller': 100, 'Comedy': 300}}") Map<String, Integer> countOfMoviesPerCatalog) {
+        this.countOfMoviesPerCatalog = countOfMoviesPerCatalog;
+    }
+}
+```
+
