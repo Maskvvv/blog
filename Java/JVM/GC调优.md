@@ -6,7 +6,7 @@
 
 **实例二**
 
-遇到过线上系统卡顿的情况。业务反应系统登录不上，用 `top -p -h` 和 `jstack` 发现是 gc 线程（数量和内核数一致且线程编号连续），排查内存中对象数量 (`jmap -histo:live javaPid`) 和 请求日志( elk 或者log4j日志)，发现是生成 excel 数据太多，一下子把老年代给撑爆了，导致疯狂的 `full gc`。 后将 excel 生成类临时替换成 SXSSFWorkbook 就暂时没有出现过。
+遇到过线上系统卡顿的情况。业务反应系统登录不上，用 `top -p -h` （ jps ）和 `jstack` 发现是 gc 线程（数量和内核数一致且线程编号连续），排查内存中对象数量 (`jmap -histo:live javaPid`) 和 请求日志( elk 或者log4j日志)，发现是生成 excel 数据太多，一下子把老年代给撑爆了，导致疯狂的 `full gc`。 后将 excel 生成类临时替换成 SXSSFWorkbook 就暂时没有出现过。
 
 **实例三**
 
