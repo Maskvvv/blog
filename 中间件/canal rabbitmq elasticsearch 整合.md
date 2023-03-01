@@ -140,6 +140,8 @@ canal.mq.partition=0
 >
 > `.journal.name` 和 `position` 这两个配置可以在， address 的数据库中执行 `SHOW MASTER STATUS` 获取的 `File` 和 `Position` 两个字段。
 >
+> 如果是设置为空的话，那么从第一次启动 cannal 的时候开始算起
+>
 > **关于 `canal.instance.filter.regex`** 
 >
 > - `.*\\..*` ：表示匹配所有的库里所有的表
