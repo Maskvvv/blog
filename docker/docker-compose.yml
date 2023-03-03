@@ -1,0 +1,25 @@
+version: '3.1'
+services:
+  rocketmq:
+    restart: always
+    image: xuchengen/rocketmq:latest
+    container_name: rocketmq1
+    ports:
+      - "8080:8080"
+      - "9876:9876"
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    volumes:
+      - rocketmq_data:/home/app/data
+      - /etc/localtime:/etc/localtime
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - host
+    environment:
+      - NAMESRV_XMS=512m
+      - NAMESRV_XMX=512m
+      - BROKER_XMS=512m
+      - BROKER_XMX=512m
+networks:
+  host:

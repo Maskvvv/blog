@@ -511,6 +511,12 @@ docker run -d --name kibana --net elastic_search -v kibanaconf:/usr/share/kibana
 docker run -d -p 15672:15672 -p 5672:5672 --restart=always --name rabbitmq-delay maskvvv/rabbitmq-delay-queue
 ```
 
+### 7.8 nacos
+
+```shell
+docker run -d -p 8848:8848 -e MODE=standalone --name nacos nacos/nacos-server:1.4.1
+```
+
 ## 八、Dockerfile 自定义镜像
 
 ### 8.1 Dockerfile 简介
