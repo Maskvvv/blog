@@ -53,6 +53,9 @@ MySQL 整体来看，其实就有两块：一块是 Server 层，它主要做的
 1. redo log 是 InnoDB 引擎特有的；binlog 是 MySQL 的 Server 层实现的，所有引擎都可以使用。
 2. redo log 是物理日志，记录的是“在某个数据页上做了什么修改”；binlog 是逻辑日志，记录的是这个语句的原始逻辑，比如“给 ID=2 这一行的 c 字段加 1 ”。
 3. redo log 是循环写的，空间固定会用完；binlog 是可以追加写入的。“追加写”是指 binlog 文件写到一定大小后会切换到下一个，并不会覆盖以前的日志。
+3. binlog和 redo log 都具备恢复能力，只是 redo log 是物理日志，恢复速度相较于 bin log 的逻辑日志 恢复起来更快，所以 redo log 用于 crash 时的数据丢失恢复，binlog 用于恢复到一个之前的某个时间点的恢复。
+
+> redo log，可以理解为，因为其记录的是对物理页的修改，一个物理页16kb，那redo log里记录的可以这么理解：16kb，换算出byte，就是16 * 1024,这么多个字节，假设文件开始为第0个字节，简称为offset 0； redo log，可能会这么记录，offset x开始，写入长度为n的字节数组，要写入的字节数组为byteArray[n]。redo log具体记录的就是表空间号，数据页号，偏移量，修改了几个字节的值和具体的修改值
 
 #  update 语句时的内部流程
 
