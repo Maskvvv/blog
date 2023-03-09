@@ -358,6 +358,13 @@ pulsarmq.topicTenantPrefix =
 > **关于 `canal.mq.flatMessage`**：
 >
 > 是否为 json 格式，如果设置为 false ，对应 MQ 收到的消息为 protobuf 格式，需要通过CanalMessageDeserializer 进行解码
+>
+> **关于 `canal.instance.filter.*`：**
+>
+> - **`canal.instance.filter.druid.ddl`：**v1.0.25版本新增，是否启用druid的DDL parse的过滤，基于sql的完整parser可以解决之前基于正则匹配补全的问题，默认为true
+> - **`canal.instance.filter.query.dcl`：**是否忽略 DCL 的 query 语句，比如grant/create user等
+> - **`canal.instance.filter.query.dml`：**是否忽略DML的query语句，比如insert/update/delete table.(mysql5.6的ROW模式可以包含statement模式的query记录)
+> - **`canal.instance.filter.query.ddl`：**是否忽略DDL的query语句，比如create table/alater table/drop table/rename table/create index/drop index. (目前支持的ddl类型主要为table级别的操作，create databases/trigger/procedure暂时划分为dcl类型)
 
 ## 5.3 关于让 canal 从头同步 binlog
 
