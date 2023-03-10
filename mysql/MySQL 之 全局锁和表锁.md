@@ -105,6 +105,8 @@ session B 被阻塞，session C 执行
 4. session B 真正做 DDL
 5. session B 升级成 MDL 写锁（阻塞）
 
+> 特殊情况说明：当表中没有数据存在时，session B 和 session C 都会被阻塞
+
 #### ALTER table table1 ADD INDEX index1(column1)
 
 ![image-20230310160035645](http://qiniu.zhouhongyin.top/2023/03/10/1678435237-image-20230310160035645.png)
