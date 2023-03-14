@@ -74,7 +74,7 @@ Online DDL 的过程：
 
 ### 我关于 Alter table 的测试
 
-版本说明：MySQL 8.0.12，隔离级别
+版本说明：MySQL 8.0.12，隔离级别 可重复读
 
 ![image-20230310160117568](http://qiniu.zhouhongyin.top/2023/03/10/1678435279-image-20230310160117568.png)
 
