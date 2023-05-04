@@ -64,3 +64,14 @@ bin/elasticsearch-plugin list
 
 ![](http://qiniu.zhouhongyin.top/2023/05/04/1683195974-image-20230504182614319.png)
 
+# 如何在开发机上运行多个 Elasticsearch 实例
+
+![](http://qiniu.zhouhongyin.top/2023/05/04/1683209047-image-20230504220407798.png)
+
+- 指定节点名称
+- 设置相同的集群名字
+- 为每个节点指定不同的存放数据的地址
+
+**查看集群情况**：`localhost:9200/_cat/nodes`
+
+![](http://qiniu.zhouhongyin.top/2023/05/04/1683209108-image-20230504220508847.png)
