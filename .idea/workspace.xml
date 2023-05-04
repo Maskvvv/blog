@@ -48,6 +48,9 @@
       <option name="presentableId" value="Default" />
       <updated>1672924161679</updated>
       <workItem from="1672924163164" duration="724000" />
+      <workItem from="1681962291954" duration="5032000" />
+      <workItem from="1682237193419" duration="50000" />
+      <workItem from="1682387783613" duration="628000" />
     </task>
     <task id="LOCAL-00001" summary="基于注解的方式配置spring容器">
       <created>1672931765354</created>
@@ -72,6 +75,7 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="基于注解的方式配置spring容器" />
