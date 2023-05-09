@@ -4,6 +4,8 @@
 docker run -d -p 8848:8848 -e MODE=standlone --restart always --name nacos nacos/nacos-server
 ```
 
+# mysql
+
 ### 关闭本机的tomcat和mysql
 
 ```sh
@@ -32,14 +34,14 @@ docker run -d -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -v mysqldata
 # 容器配置文件默认保存在 /etc/mysql
 ```
 
-### 部署 tomcat
+# 部署 tomcat
 
 ```sh
 docker run -d -p 8080:8080 --name tomcat -v webapps:/usr/local/tomcat/webapps -v tomcatconf:/usr/local/tomcat/conf tomcat:8.0-jre8
 # /usr/local/tomcat/webapps /usr/local/tomcat/conf 分别为容器内 webapps 和 配置文件目录。
 ```
 
-### 部署 redis
+# 部署 redis
 
 ```shell
 docker run -d -p 6379:6379 --name redis redis:5.0.10
@@ -57,7 +59,7 @@ docker run -d -v /root/redisconf:/usr/local/etc/redis -p 6379:6379 --name myredi
 # 通过 redis-server /usr/local/etc/redis/redis.conf 命令在容器启动时加载 redis.conf 配置文件
 ```
 
-### 部署 ElasticSearch
+# 部署 ElasticSearch
 
 ```shell
 docker run -d --name elasticsearch --net elastic_search -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:6.8.0
@@ -113,10 +115,9 @@ docker run -d --name kibana --net elastic_search -v kibanaconf:/usr/share/kibana
 docker run -d -p 15672:15672 -p 5672:5672 --restart=always --name rabbitmq-delay maskvvv/rabbitmq-delay-queue
 ```
 
-### nacos
+# mongodb
 
 ```shell
-docker run -d -p 8848:8848 -e MODE=standalone --name nacos nacos/nacos-server:1.4.1
+docker run -d -p 27017:27017 --name mongo mongo:5.0.5
 ```
 
-## 
