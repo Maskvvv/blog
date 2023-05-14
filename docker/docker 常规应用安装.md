@@ -121,3 +121,9 @@ docker run -d -p 15672:15672 -p 5672:5672 --restart=always --name rabbitmq-delay
 docker run -d -p 27017:27017 --name mongo mongo:5.0.5
 ```
 
+# Dubbo
+
+```shell
+docker run -d -p 21810:2181 --name zookeeper zookeeper:3.4.14
+```
+
