@@ -1,0 +1,25 @@
+1、AnnotationConfigApplicationContext.register会注册启动类为AnnotatedGenericBeanDefinition，abd包括ClassMetadata和AnnotatedTypeMetadata 
+
+2、refresh->invokeBeanFactoryPostProcessors->PostProcessorRegistrationDelegate.invokeBeanFactoryPostProcessors 里面拿到ConfigurationAnnotationProcessor处理器处理（通过AnnotationConfigUtils注册） 
+
+3、通过过滤排除各internalXXX，确定启动类为配置类 
+
+4、创建ConfigurationClassParser，并调用parse分析 
+
+5、创建ConfigurationClass，参数AnnotationMetadata和beanName 
+
+6、通过ConfigurationClass,创建SourceClass,这里有一个疑惑，创建的时候传入Class，并非AnnotationMetadata，创建的时候会再次通过自省AnnotationMetadata.introspect再次分析注解元信息。实际在register生成bd时已经调用多一次。 
+
+7、调用doProcessConfigurationClass处理诸如@ImportResource，@PropertySources，@ComponentScans等 
+
+8、在处理ComponentScans时，创建ClassPathBeanDefinitionScanner。在scanner.doScan中 findCandidateComponents(String basePackage)->scanCandidateComponents->拼接路径classpath*:+basePackage+**/*.class 
+
+9、GenericApplicationContext->AbstractApplicationContext->findPathMatchingResources->getResources->findAllClassPathResources....->最终通过ClassLoader.getResources(path)获取路径下的所有Url资源并生成UrlResource 
+
+10、创建SimpleMetadataReader，通过ClassReader读取class文件，创建AnnotationMetadataReadingVisitor(ASM class visotor)。这一块逻辑不懂，classReader已经读入文件，还需要ASM做什么？ 
+
+11、最终生成ScannedGenericBeanDefinition 
+
+12、通过postProcessBeanDefinition及AnnotationConfigUtils.processCommonDefinitionAnnotations，补充bd其他属性，比如是否lazy，初始化接口名称等等 
+
+13、注册bd结束
