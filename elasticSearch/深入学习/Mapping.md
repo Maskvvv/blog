@@ -327,3 +327,291 @@ POST users/_search
 GET users/_mapping
 ```
 
+# 多字段特性及配置自定义 Analyzer
+
+## fields（多字段类型）
+
+出于不同的目的，以不同的方式索引同一字段，这就是多字段（*multi-fields*）的意义。比如在下面这个例子中，text 类型 city 子u但有一个 fields “row” ，他的类型时 keyword，那么当创建一条文档时，city 字段的数据，会分别以 text 类型，和 keyword 进行索引。你可通过 `city.row` 的方式使用该字段。
+
+```json
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "city": {
+        "type": "text",
+        "fields": {
+          "raw": { 
+            "type":  "keyword"
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1
+{
+  "city": "New York"
+}
+
+PUT my-index-000001/_doc/2
+{
+  "city": "York"
+}
+
+GET my-index-000001/_search
+{
+  "query": {
+    "match": {
+      "city": "york" 
+    }
+  },
+  "sort": {
+    "city.raw": "asc" 
+  },
+  "aggs": {
+    "Cities": {
+      "terms": {
+        "field": "city.raw" 
+      }
+    }
+  }
+}
+```
+
+因为 `city.raw` 是 keyword 类型，所以你可以通过他进行排序和聚合操作。
+
+当然，你也可以对其指定分词器。
+
+```json
+PUT my-index-000001
+{
+  "mappings": {
+    "properties": {
+      "text": { 
+        "type": "text",
+        "fields": {
+          "english": { 
+            "type":     "text",
+            "analyzer": "english"
+          }
+        }
+      }
+    }
+  }
+}
+
+PUT my-index-000001/_doc/1
+{ "text": "quick brown fox" } 
+
+PUT my-index-000001/_doc/2
+{ "text": "quick brown foxes" } 
+
+GET my-index-000001/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "quick brown foxes",
+      "fields": [ 
+        "text",
+        "text.english"
+      ],
+      "type": "most_fields" 
+    }
+  }
+}
+```
+
+## Exact Values 和 Full Text
+
+![](http://qiniu.zhouhongyin.top/2023/06/15/1686838162-image-20230615220922879.png)
+
+默认情况下， ES 会为每个字段创建一个倒排索引，Excat values 在索引时不会进行特殊的分词处理。
+
+![](http://qiniu.zhouhongyin.top/2023/06/15/1686838284-image-20230615221124736.png)
+
+## 自定义分词
+
+你可以通过组合分词器的组件（Character Filter、Tokenizer、Token Filter）的方式，自定义分词器。
+
+### Character Filter
+
+![](http://qiniu.zhouhongyin.top/2023/06/15/1686838647-image-20230615221727718.png)
+
+### Tokenizer
+
+![](http://qiniu.zhouhongyin.top/2023/06/15/1686838718-image-20230615221838713.png)
+
+### Token Filter
+
+![](http://qiniu.zhouhongyin.top/2023/06/15/1686838732-image-20230615221852436.png)
+
+### 自定义分词器
+
+- `mappings.properties.FIELD.`
+  - `analyzer`：指定索引字段时使用的分词器
+  - `search_analyzer`：指定搜索时使用的分词器，不指定则使用 `analyzer` 中的指定的
+  - `search_quote_analyzer`：query_string 查询中使用（不是很懂）
+- `analysis.`
+  - `analyzer.my_analyzer`：指定自定义分词器名称
+    - `type`：分词器类型
+    - `tokenizer`：指定 tokenizer
+    - `filter`：指定 Token Filter
+- `filter`： 自定义 Token Filter
+  - `english_stop`：自定义 Token Filter 名称
+
+```json
+PUT my-index-000001
+{
+   "settings":{
+      "analysis":{
+         "analyzer":{
+            "my_analyzer":{
+               "type":"custom",
+               "tokenizer":"standard",
+               "filter":[
+                  "lowercase"
+               ]
+            },
+            "my_stop_analyzer":{ 
+               "type":"custom",
+               "tokenizer":"standard",
+               "filter":[
+                  "lowercase",
+                  "english_stop"
+               ]
+            }
+         },
+         "filter":{
+            "english_stop":{
+               "type":"stop",
+               "stopwords":"_english_"
+            }
+         }
+      }
+   },
+   "mappings":{
+       "properties":{
+          "title": {
+             "type":"text",
+             "analyzer":"my_analyzer", 
+             "search_analyzer":"my_stop_analyzer", 
+             "search_quote_analyzer":"my_analyzer" 
+         }
+      }
+   }
+}
+
+PUT my-index-000001/_doc/1
+{
+   "title":"The Quick Brown Fox"
+}
+
+PUT my-index-000001/_doc/2
+{
+   "title":"A Quick Brown Fox"
+}
+
+GET my-index-000001/_search
+{
+   "query":{
+      "query_string":{
+         "query":"\"the quick brown fox\"" 
+      }
+   }
+}
+```
+
+## 演示
+
+```java
+PUT logs/_doc/1
+{"level":"DEBUG"}
+
+GET /logs/_mapping
+
+POST _analyze
+{
+  "tokenizer":"keyword",
+  "char_filter":["html_strip"],
+  "text": "<b>hello world</b>"
+}
+
+
+POST _analyze
+{
+  "tokenizer":"path_hierarchy",
+  "text":"/user/ymruan/a/b/c/d/e"
+}
+
+
+
+#使用char filter进行替换
+POST _analyze
+{
+  "tokenizer": "standard",
+  "char_filter": [
+      {
+        "type" : "mapping",
+        "mappings" : [ "- => _"]
+      }
+    ],
+  "text": "123-456, I-test! test-990 650-555-1234"
+}
+
+//char filter 替换表情符号
+POST _analyze
+{
+  "tokenizer": "standard",
+  "char_filter": [
+      {
+        "type" : "mapping",
+        "mappings" : [ ":) => happy", ":( => sad"]
+      }
+    ],
+    "text": ["I am felling :)", "Feeling :( today"]
+}
+
+// white space and snowball
+GET _analyze
+{
+  "tokenizer": "whitespace",
+  "filter": ["stop","snowball"],
+  "text": ["The gilrs in China are playing this game!"]
+}
+
+
+// whitespace与stop
+GET _analyze
+{
+  "tokenizer": "whitespace",
+  "filter": ["stop","snowball"],
+  "text": ["The rain in Spain falls mainly on the plain."]
+}
+
+
+//remove 加入lowercase后，The被当成 stopword删除
+GET _analyze
+{
+  "tokenizer": "whitespace",
+  "filter": ["lowercase","stop","snowball"],
+  "text": ["The gilrs in China are playing this game!"]
+}
+
+//正则表达式
+GET _analyze
+{
+  "tokenizer": "standard",
+  "char_filter": [
+      {
+        "type" : "pattern_replace",
+        "pattern" : "http://(.*)",
+        "replacement" : "$1"
+      }
+    ],
+    "text" : "http://www.elastic.co"
+}
+
+```
+
