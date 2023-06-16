@@ -615,3 +615,133 @@ GET _analyze
 
 ```
 
+# Dynamic templates（动态模板）
+
+官网：https://www.elastic.co/guide/en/elasticsearch/reference/current/dynamic-templates.html#dynamic-templates
+
+使用动态模板可以让你更好的在动态添加 字段 时，控制他的 mapping。
+
+## 定义 Dynamic templates 的基本语法
+
+有三个步骤：
+
+- 指定动态模板名称
+- 指定匹配字段的规则
+- 为匹配到的字段设置 Mapping
+
+```json
+"dynamic_templates": [
+    {
+      "my_template_name": { 
+        ... match conditions ... 
+        "mapping": { ... } 
+      }
+    },
+    ...
+  ]
+```
+
+## match conditions
+
+- `match_mapping_typ`：对匹配到的类型进行操作
+- `match`：匹配的字段名称进行操作，比如：`ip*`，操作以 ip 开头的
+- `unmatch`：不操作该字段，比如：`*.txt`，不操作以 .txt为结尾的
+- `path_match`：同 match，但是 patch_match 可以通过 `.` 匹配对象路径，比如：`name.*` 表示匹配 name 的所有子字段
+-  `path_unmatch`：同 unmatch 和 path_match
+
+```json
+# 匹配 string 类型，以 long_ 为前缀，_text 为后缀的字段，映射为 long 类型
+PUT my-index-000001
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "longs_as_strings": {
+          "match_mapping_type": "string",
+          "match":   "long_*",
+          "unmatch": "*_text",
+          "mapping": {
+            "type": "long"
+          }
+        }
+      }
+    ]
+  }
+}
+
+PUT my-index-000001/_doc/1
+{
+  "long_num": "5", 
+  "long_text": "foo" 
+}
+
+
+# 匹配 name 对象中的所有字段（除了 middle 字段外），设置其类型为 text，并复制到 full_name 字段中
+PUT my-index-000001
+{
+  "mappings": {
+    "dynamic_templates": [
+      {
+        "full_name": {
+          "path_match":   "name.*",
+          "path_unmatch": "*.middle",
+          "mapping": {
+            "type":       "text",
+            "copy_to":    "full_name"
+          }
+        }
+      }
+    ]
+  }
+}
+
+```
+
+# Index template
+
+Index template 是一种在创建索引时告诉 Elasticsearch 如何配置索引的方法，可以帮助你设定 Index 的 Mapping 和 Setting。
+
+一个索引的创建可能会匹配到多个 Index template，其中的设置会被 “merge” 在一起，通过指定 “order” 的数值，你可以控制 “merge” 的顺序。
+
+## Index templet 的工作方式
+
+当一个索引被创建时，经历的过程：
+
+1. 应用 ElasticSearch 中默认的 setting 和 mapping
+2. 根据 order 的数值由低到高，应用 Index template 中的设定，后执行的会覆盖前面执行的设置
+3. 应用创建索引时，用户创建的 setting 和 mapping
+
+```json
+#Create a default template
+PUT _template/template_default
+{
+  "index_patterns": ["*"],
+  "order" : 0,
+  "version": 1,
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas":1
+  }
+}
+
+
+PUT /_template/template_test
+{
+    "index_patterns" : ["test*"],
+    "order" : 1,
+    "settings" : {
+    	"number_of_shards": 1,
+        "number_of_replicas" : 2
+    },
+    "mappings" : {
+    	"date_detection": false,
+    	"numeric_detection": true
+    }
+}
+
+#查看template信息
+GET /_template/template_default
+GET /_template/temp*
+
+```
+
