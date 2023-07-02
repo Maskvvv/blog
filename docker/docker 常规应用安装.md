@@ -62,7 +62,7 @@ docker run -d -v /root/redisconf:/usr/local/etc/redis -p 6379:6379 --name myredi
 # 部署 ElasticSearch
 
 ```shell
-docker run -d --name elasticsearch --net elastic_search -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:6.8.0
+docker run -d --name elasticsearch --net esnetwork -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:7.10.1
 # 由于 ES 默认以集群的方式启动，所以可以通过 -e "discovery.type=single-node" 命令设置为单节点启动
 #建议通过　--net elastic_search　指定网桥
 ```
@@ -79,33 +79,38 @@ docker run -d --name elasticsearch --net elastic_search -p 9200:9200 -p 9300:930
 
 ```shell
 # ES 持久化
-docker run -d --name elasticsearch -v esdata:/usr/share/elasticsearch/data -p 9200:9200 -p 9300:9300 elasticsearch:6.8.0
+docker run -d --name elasticsearch -v esdata:/usr/share/elasticsearch/data -p 9200:9200 -p 9300:9300 elasticsearch:7.10.1
 ```
 
 ```shell
 # ES 挂载配置文件
-docker run -d --name elasticsearch -v esdata:/usr/share/elasticsearch/data -v esconfig:/usr/share/elasticsearch/config -p 9200:9200 -p 9300:9300 elasticsearch:6.8.0
+docker run -d --name elasticsearch -v esdata:/usr/share/elasticsearch/data -v esconfig:/usr/share/elasticsearch/config -p 9200:9200 -p 9300:9300 elasticsearch:7.10.1
 ```
 
 ```shell
 # ES 挂载插件目录
-docker run -d --name elasticsearch -v esdata:/usr/share/elasticsearch/data -v esconfig:/usr/share/elasticsearch/config -v esplugins:/usr/share/elasticsearch/plugins -p 9200:9200 -p 9300:9300 elasticsearch:6.8.0
+docker run -d --name elasticsearch -v esdata:/usr/share/elasticsearch/data -v esconfig:/usr/share/elasticsearch/config -v esplugins:/usr/share/elasticsearch/plugins -p 9200:9200 -p 9300:9300 elasticsearch:7.10.1
+```
+
+```shell
+# 全
+docker run -d --name elasticsearch --net esnetwork -v esdata:/usr/share/elasticsearch/data -v esconfig:/usr/share/elasticsearch/config -v esplugins:/usr/share/elasticsearch/plugins -p 9200:9200 -p 9300:9300 -e "discovery.type=single-node" elasticsearch:7.10.1
 ```
 
 ### 安装 kibana
 
 ```shell
-docker run -d --name kibana --net elastic_search -p 5601:5601 kibana:6.8.0
+docker run -d --name kibana --net esnetwork -p 5601:5601 kibana:7.10.1
 ```
 
 ```shell
 # 指定 ES 端口启动
-docker run -d --name kibana --net elastic_search -e "ELASTICSEARCH_HOSTS=http://elasticseach:9200" -p 5601:5601 kibana:6.8.0
+docker run -d --name kibana --net esnetwork -e "ELASTICSEARCH_HOSTS=http://elasticseach:9200" -p 5601:5601 kibana:7.10.1
 ```
 
 ```shell
 # 加载配置文件启动
-docker run -d --name kibana --net elastic_search -v kibanaconf:/usr/share/kibana/config -p 5601:5601 kibana:6.8.0
+docker run -d --name kibana --net esnetwork -v kibanaconf:/usr/share/kibana/config -p 5601:5601 kibana:7.10.1
 # 启动后修改 kibana.yml 即可
 ```
 
