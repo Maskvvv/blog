@@ -134,7 +134,7 @@ public class MySqlSourceExample {
 
 #### 概念说明
 
-![](http://qiniu.zhouhongyin.top/2023/07/03/1688364357-image-20230703140556911.png)
+![](http://qiniu.zhouhongyin.top/2023/07/04/1688436145-image-20230704100225243.png)
 
 ##### **application**
 
@@ -152,7 +152,7 @@ public class MySqlSourceExample {
 
 每个 **Flink Job** 都有一个自己的 **cursor**，他记录着每个 **Flink Job** 当前同步 binlog 的位置，用来在 CDC 项目重新启动是接着上一次同步的位置，继续同步数据。
 
-```json
+```text
 # cursor 数据结构
 - application2
  - 端口号
@@ -184,7 +184,7 @@ public class MySqlSourceExample {
 
 在 `resources` 路径下新建一个 `easy-flink.conf` 文件，语法为 `typesafe.config`。
 
-```
+```text
 ourea = {
     name = "ourea"
     hostname = "myserver.com"
@@ -1305,7 +1305,7 @@ Completion suggester 是 ES 专门为前缀匹配设计的数据类型，他会�
 
 **CompanySink**
 
-```json
+```java
 @FlinkSink(value = "ourea", database = "ourea", table = "ourea.company")
 public class CompanySink implements FlinkJobSink {
 
@@ -1340,7 +1340,7 @@ public class CompanySink implements FlinkJobSink {
 
 **OccupationSink**
 
-```json
+```java
 @FlinkSink(value = "ourea", database = "ourea", table = "ourea.occupation")
 public class OccupationSink implements FlinkJobSink {
 
@@ -1539,7 +1539,7 @@ public class OureaHomeSuggestionModel {
 
 由于本人前端能力有限所以网上找了个搜索的例子改了改，见笑了  : ）
 
-```java
+```html
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
