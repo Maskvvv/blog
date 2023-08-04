@@ -138,3 +138,9 @@ docker run -d -p 21810:2181 --name zookeeper zookeeper:3.4.14
 docker run -itd --name=rocketmq --hostname rocketmq --restart=always -p 8080:8080 -p 9876:9876 -p 10909:10909 -p 10911:10911 -p 10912:10912 -v rocketmq_data:/home/app/data -v /etc/localtime:/etc/localtime -v /var/run/docker.sock:/var/run/docker.sock xuchengen/rocketmq:latest
 ```
 
+# nexus3
+
+```
+docker run -d -p 8081:8081 --name nexus -v nexus-data:/nexus-data sonatype/nexus3
+```
+
