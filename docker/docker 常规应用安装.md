@@ -44,7 +44,9 @@ docker run -d -p 8080:8080 --name tomcat -v webapps:/usr/local/tomcat/webapps -v
 # 部署 redis
 
 ```shell
-docker run -d -p 6379:6379 --name redis redis:5.0.10
+docker run -d -p 6379:6379 –requirepass 1234567788 --name redis redis:5.0.10
+# 设置密码
+docker run --name redis -p 6380:6379 -d redis --requirepass "1234567788"
 ```
 
 ```shell
