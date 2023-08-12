@@ -80,8 +80,7 @@ https://www.gnupg.org/download/
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <!--这里填你安装的GnuPG位置-->
-        <gpg.executable>C:/Program Files (x86)/GnuPG/bin/gpg.exe</gpg.executable>
+        <gpg.executable>gpg</gpg.executable>
         <gpg.passphrase>填写你生成秘钥时输入的密码</gpg.passphrase>
       </properties>
     </profile>
@@ -183,6 +182,9 @@ https://www.gnupg.org/download/
                             <goals>
                                 <goal>jar</goal>
                             </goals>
+                            <configuration>
+                                <additionalparam>-Xdoclint:none</additionalparam>
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
