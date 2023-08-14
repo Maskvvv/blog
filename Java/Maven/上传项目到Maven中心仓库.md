@@ -115,8 +115,8 @@ https://www.gnupg.org/download/
 
 <developers>
     <developer>
-        <id>xpc</id>
-        <name>xpc</name>
+        <id>henrie chou</id>
+        <name>henrie chou</name>
         <email>zhouhongyin1998@gmail.com</email>
         <roles>
             <role>Project Manager</role>
@@ -255,8 +255,8 @@ https://www.gnupg.org/download/
 
     <developers>
         <developer>
-            <id>xpc</id>
-            <name>xpc</name>
+            <id>henrie chou</id>
+            <name>henrie chou</name>
             <email>zhouhongyin1998@gmail.com</email>
             <roles>
                 <role>Project Manager</role>
