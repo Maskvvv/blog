@@ -136,8 +136,40 @@ docker run -d -p 21810:2181 --name zookeeper zookeeper:3.4.14
 
 # RocketMQ
 
-```SHELL
-docker run -itd --name=rocketmq --hostname rocketmq --restart=always -p 8080:8080 -p 9876:9876 -p 10909:10909 -p 10911:10911 -p 10912:10912 -v rocketmq_data:/home/app/data -v /etc/localtime:/etc/localtime -v /var/run/docker.sock:/var/run/docker.sock xuchengen/rocketmq:latest
+## nameserver
+
+```shell
+docker run -d --name rmqnamesrv -p 9876:9876 -e "NAMESRV_ADDR=192.168.0.194:9876" apache/rocketmq:5.1.3 sh mqnamesrv
+```
+
+## broker
+
+```shell
+docker run -d --name rmqbroker -v rocketmq-broker:/home/rocketmq/rocketmq-5.1.3/ -p 10911:10911 -p 10909:10909 -e "NAMESRV_ADDR=192.168.0.194:9876" -e "BROKER_IP=192.168.0.194" -e "AUTO_CREATE_TOPIC_ENABLE=true" apache/rocketmq:5.1.3 sh mqbroker -n 192.168.0.194:9876 -c /home/rocketmq/rocketmq-5.1.3/conf/broker.conf
+```
+
+### broker.conf
+
+`/home/rocketmq/rocketmq-5.1.3/conf/broker.conf`
+
+```
+namesrvAddr=192.168.0.194:9876
+brokerClusterName = DefaultCluster
+brokerName = broker-a
+brokerId = 0
+deleteWhen = 04
+fileReservedTime = 48
+brokerRole = ASYNC_MASTER
+flushDiskType = ASYNC_FLUSH
+brokerIP1 = 192.168.0.194
+listenPort=10911
+autoCreateTopicEnable=true
+```
+
+## rocketmq-console
+
+```shell
+docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=192.168.0.194:9876 -Dcom.rocketmq.sendMessageWithVIPChannel=false" -p 8080:8080 -t styletang/rocketmq-console-ng:1.0.0
 ```
 
 # nexus3
