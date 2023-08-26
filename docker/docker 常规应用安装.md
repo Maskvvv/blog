@@ -116,7 +116,7 @@ docker run -d --name kibana --net esnetwork -v kibanaconf:/usr/share/kibana/conf
 # 启动后修改 kibana.yml 即可
 ```
 
-### rabbitmq
+# rabbitmq
 
 ```shell
 docker run -d -p 15672:15672 -p 5672:5672 --restart=always --name rabbitmq-delay maskvvv/rabbitmq-delay-queue
@@ -164,6 +164,7 @@ flushDiskType = ASYNC_FLUSH
 brokerIP1 = 192.168.0.194
 listenPort=10911
 autoCreateTopicEnable=true
+defaultTopicQueueNums=4
 ```
 
 ## rocketmq-console
@@ -174,7 +175,7 @@ docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=192.168.0.194:9876 -Dcom.rocket
 
 # nexus3
 
-```
+```shell
 docker run -d -p 8081:8081 --name nexus -v nexus-data:/nexus-data sonatype/nexus3
 ```
 
