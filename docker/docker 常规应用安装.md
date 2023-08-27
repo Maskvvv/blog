@@ -146,14 +146,15 @@ docker run -d --name rmqnamesrv -p 9876:9876 -e "NAMESRV_ADDR=192.168.0.194:9876
 
 ```shell
 docker run -d --name rmqbroker -v rocketmq-broker:/home/rocketmq/rocketmq-5.1.3/ -p 10911:10911 -p 10909:10909 -e "NAMESRV_ADDR=192.168.0.194:9876" -e "BROKER_IP=192.168.0.194" -e "AUTO_CREATE_TOPIC_ENABLE=true" apache/rocketmq:5.1.3 sh mqbroker -n 192.168.0.194:9876 -c /home/rocketmq/rocketmq-5.1.3/conf/broker.conf
+
+docker run -d --name rmqbroker2 -v rocketmq-broker:/home/rocketmq/rocketmq-5.1.3/ -p 10921:10921 -e "NAMESRV_ADDR=192.168.0.194:9876" -e "BROKER_IP=192.168.0.194" -e "AUTO_CREATE_TOPIC_ENABLE=true" apache/rocketmq:5.1.3 sh mqbroker -n 192.168.0.194:9876 -c /home/rocketmq/rocketmq-5.1.3/conf/2m-2s-async/broker-b.properties
 ```
 
 ### broker.conf
 
 `/home/rocketmq/rocketmq-5.1.3/conf/broker.conf`
 
-```
-namesrvAddr=192.168.0.194:9876
+```properties
 brokerClusterName = DefaultCluster
 brokerName = broker-a
 brokerId = 0
@@ -161,10 +162,26 @@ deleteWhen = 04
 fileReservedTime = 48
 brokerRole = ASYNC_MASTER
 flushDiskType = ASYNC_FLUSH
+
 brokerIP1 = 192.168.0.194
 listenPort=10911
-autoCreateTopicEnable=true
-defaultTopicQueueNums=4
+namesrvAddr=1192.168.0.194:9876
+autoCreateTopicEnable = true
+```
+
+```properties
+brokerClusterName=DefaultCluster
+brokerName=broker-b
+brokerId=0
+deleteWhen=04
+fileReservedTime=48
+brokerRole=ASYNC_MASTER
+flushDiskType=ASYNC_FLUSH
+
+brokerIP1 = 192.168.0.194
+listenPort=10921
+namesrvAddr=192.168.0.194:9876
+autoCreateTopicEnable = true
 ```
 
 ## rocketmq-console
