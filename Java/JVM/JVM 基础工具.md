@@ -256,3 +256,45 @@ Full thread dump Java HotSpot(TM) 64-Bit Server VM (25.361-b09 mixed mode):
 > </body>
 > </html>
 > ```
+
+# 基础工具总结
+
+**基础工具：**用于支持基本的程序创建和运行
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276548-image-20231014174228293.png)
+
+**安全：**用于程序签名、设置安全测试等
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276571-image-20231014174251286.png)
+
+**国际化：**用于创建本地语言文件
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276587-image-20231014174307391.png)
+
+**远程方法调用：**用于跨Web或网络的服务交互
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276623-image-20231014174343861.png)
+
+**Java IDL与RMI-IIOP：**在JDK 11中结束了十余年的CORBA支持，这些工具不再提供
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276661-image-20231014174420975.png)
+
+**部署工具：**用于程序打包、发布和部署
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276680-image-20231014174440774.png)
+
+**Java Web Start**
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276698-image-20231014174458780.png)
+
+**性能监控和故障处理工具**
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276768-image-20231014174608583.png)
+
+**WebService工具：**与CORBA一起在JDK 11中被移除
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276793-image-20231014174633388.png)
+
+**REPL 和脚本工具**
+
+![](http://qiniu.zhouhongyin.top/2023/10/14/1697276814-image-20231014174654275.png)
