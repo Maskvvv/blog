@@ -15,11 +15,11 @@ services:
       - /etc/localtime:/etc/localtime
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - host
+      - rocketmq_host
     environment:
       - NAMESRV_XMS=512m
       - NAMESRV_XMX=512m
       - BROKER_XMS=512m
       - BROKER_XMX=512m
 networks:
-  host:
+  rocketmq_host:
