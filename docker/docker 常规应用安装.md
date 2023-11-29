@@ -196,3 +196,9 @@ docker run -e "JAVA_OPTS=-Drocketmq.namesrv.addr=192.168.0.194:9876 -Dcom.rocket
 docker run -d -p 8081:8081 --name nexus -v nexus-data:/nexus-data sonatype/nexus3
 ```
 
+# Nginx
+
+```shell
+docker run -d -p 80:80 -p 443:443 -v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf -v /home/nginx/html:/usr/share/nginx/html -v /home/nginx/log:/var/log/nginx -v /home/nginx/conf/conf.d:/etc/nginx/conf.d --name nginx nginx
+```
+
