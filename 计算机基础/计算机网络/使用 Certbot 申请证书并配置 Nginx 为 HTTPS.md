@@ -24,14 +24,12 @@ certbot certonly -d *.test.com -d test.com --manual --preferred-challenges dns
 ```nginx
 server {
     listen       80;
-    server_name  test.com;
-    root         /usr/share/nginx/html;
+    server_name  zhouhongyin.top;
     return 301 https://$host$request_uri;
 }
 server {
     listen       80;
-    server_name  *.test.com;
-    root         /usr/share/nginx/html;
+    server_name  *.zhouhongyin.top;
     return 301 https://$host$request_uri;
 }
 
