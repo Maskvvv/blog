@@ -2,6 +2,8 @@
 
 ```shell
 docker run -d -p 8848:8848 -e MODE=standlone --restart always --name nacos nacos/nacos-server
+
+docker run -d -p 8848:8848 -p 9848:9848 -p 9849:9849 --privileged=true --restart=always -e MODE=standalone --name nacos nacos/nacos-server:v2.2.0
 ```
 
 # mysql
