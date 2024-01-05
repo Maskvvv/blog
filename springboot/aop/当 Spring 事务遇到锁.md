@@ -4,7 +4,7 @@
 
 # 问题分析
 
-```Java
+```java
 @RestController
 @RequestMapping("user")
 public class UserController {
@@ -42,7 +42,7 @@ public class UserService {
 
 上面的代码业务非常简单，就是当用户不存在时添加该用户，但是由于**判断用户是否存在和添加用户不是原子性**的，当并发上来或者某些原因导致请求在几毫秒内请求了多次可能会存在多条一样的用户记录问题，user 数据库一般有关于 user 的唯一索引，所以问题不大，到时候报错就是了，但是有些业务场景没办法加唯一索引，就可能存在多条重复数据了，解决办法有可能是下面这样，在查询用户是否存在和添加用户前后加锁释放锁，已保证查询用户和插入用户操作是原子性的，代码如下：
 
-```Java
+```java
 ....Controller
 
 @Service
