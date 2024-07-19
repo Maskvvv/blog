@@ -204,3 +204,18 @@ docker run -d -p 8081:8081 --name nexus -v nexus-data:/nexus-data sonatype/nexus
 docker run -d -p 80:80 -p 443:443 -v /home/nginx/conf/nginx.conf:/etc/nginx/nginx.conf -v /home/nginx/html:/usr/share/nginx/html -v /home/nginx/log:/var/log/nginx -v /home/nginx/conf/conf.d:/etc/nginx/conf.d --name nginx nginx
 ```
 
+# slor
+
+```bash
+# 直接运行solr语句下载solr8.1.1镜像
+
+docker run -d -p 8983:8983 --name solr -t solr:8.1.1
+
+# 将容器内solr相关内存拷贝保存至本地路径下，之后删除创建的solr容器，重新以本地挂载的文件运行
+docker cp solr:/opt/solr/ /solr/
+docker rm -f solr
+
+# 本地挂载目录启动solr
+docker run -d -p 8983:8983 --name solr -v /solr:/opt/solr -t solr:8.1.1
+```
+
