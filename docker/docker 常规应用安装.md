@@ -46,7 +46,7 @@ docker run -d -p 8080:8080 --name tomcat -v webapps:/usr/local/tomcat/webapps -v
 # 部署 redis
 
 ```shell
-docker run -d -p 6379:6379 –requirepass 1234567788 --name redis redis:5.0.10
+docker run -d -p 6379:6379 -v --name redis redis:5.0.10
 # 设置密码
 docker run --name redis -p 6380:6379 -d redis --requirepass "1234567788"
 ```
@@ -217,5 +217,29 @@ docker rm -f solr
 
 # 本地挂载目录启动solr
 docker run -d -p 8983:8983 --name solr -v /solr:/opt/solr -t solr:8.1.1
+```
+
+# zookeeper
+
+
+
+```
+docker run -d \
+  --name zookeeper \
+  -p 2181:2181 \
+  -e TZ="Asia/Shanghai" \
+  -v /Users/mask/docker/volumes/zookeeper/data:/data \
+  -v /Users/mask/docker/volumes/zookeeper/logs:/logs \
+  -v /Users/mask/docker/volumes/zookeeper/conf:/conf \
+  --restart always \
+  zookeeper:3.8
+  
+  
+  
+  
+  
+docker run --rm -it ksprojects/zkcopy \
+  --source apibeta.zk01.ticketebay.com:2181/ \
+  --target localhost:2181/
 ```
 
