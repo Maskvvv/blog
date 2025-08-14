@@ -24,9 +24,18 @@
     <!-- Groovy 3.x 依赖 -->
     <dependency>
         <groupId>org.codehaus.groovy</groupId>
-        <artifactId>groovy-all</artifactId>
+        <artifactId>groovy</artifactId>
         <version>3.0.15</version>
-        <type>pom</type>
+    </dependency>
+    <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-json</artifactId>
+        <version>3.0.15</version>
+    </dependency>
+    <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy-xml</artifactId>
+        <version>3.0.15</version>
     </dependency>
     
     <!-- Spring Boot Web -->
