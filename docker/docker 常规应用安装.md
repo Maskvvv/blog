@@ -223,7 +223,7 @@ docker run -d -p 8983:8983 --name solr -v /solr:/opt/solr -t solr:8.1.1
 
 
 
-```
+```shell
 docker run -d \
   --name zookeeper \
   -p 2181:2181 \
@@ -241,5 +241,13 @@ docker run -d \
 docker run --rm -it ksprojects/zkcopy \
   --source apibeta.zk01.ticketebay.com:2181/ \
   --target localhost:2181/
+```
+
+
+
+# n8n
+
+```shell
+docker run -d --name n8n -p 5678:5678 -e N8N_SECURE_COOKIE=false -e TZ=Asia/Shanghai -v n8n_data:/home/node/.n8n n8nio/n8n
 ```
 
