@@ -5,7 +5,10 @@
 已验证环境（本次实际执行的服务器）：
 - 服务器：39.105.207.111（root 用户）
 - Docker：Docker Engine 27.3.1（linux/amd64）
-- n8n 基础镜像：`n8nio/n8n:latest`
+- n8n：2.4.6（镜像：`n8nio/n8n:latest`）
+- task runners：2.4.6（镜像：`n8nio/runners:2.4.6`）
+- 自定义镜像：`n8n-python:latest`
+- 部署模式：task runners external mode（双容器）
 
 ## 1. 背景说明（为什么需要“自举 apk”）
 
@@ -33,6 +36,31 @@ cd /opt/n8n-python
 
 ```bash
 docker version
+```
+
+## 2.1 一键部署脚本（推荐）
+
+本仓库已提供一键脚本，可完成以下动作：
+- 写入 Dockerfile（自举 apk + 安装 python3/pip + 创建 /opt/venv）
+- 构建自定义镜像 `n8n-python:latest`
+- 拉取 `n8nio/runners:${N8N_VERSION}`
+- 创建 `n8n_data` 数据卷与 `n8n-net` 网络
+- 生成并持久化 `N8N_RUNNERS_AUTH_TOKEN`（默认保存到 `/opt/n8n-python/.runners_auth_token`，避免重启后 token 改变导致 runners 断连）
+- 启动 `n8n-main` + `n8n-runners`（external mode）
+
+将脚本复制到服务器（例如 `/opt/n8n-python/deploy-n8n-python.sh`）后执行：
+
+```bash
+bash /opt/n8n-python/deploy-n8n-python.sh
+```
+
+可选环境变量（不设置则使用默认值）：
+
+```bash
+WORKDIR=/opt/n8n-python \
+N8N_VERSION=2.4.6 \
+TZ_VALUE=Asia/Shanghai \
+bash /opt/n8n-python/deploy-n8n-python.sh
 ```
 
 ## 3. 编写 Dockerfile（n8n + Python + venv）
@@ -96,51 +124,92 @@ docker run --rm n8n-python:latest python --version
 docker run --rm n8n-python:latest pip --version
 ```
 
-## 5. 创建数据卷并启动 n8n 容器
+## 5. 创建数据卷与网络，并启动 n8n + runners（external mode）
 
-创建数据卷（用于持久化 n8n 配置、密钥、SQLite 等）：
+说明：
+- `n8n-python:latest` 里安装的 Python 主要用于在 n8n 容器内执行命令（例如 Execute Command 节点）
+- n8n 的 Python Code 节点使用 task runners 机制，推荐 external mode，通过旁车容器 `n8n-runners` 提供 Python runner
+- `n8nio/runners` 版本必须与 `n8n` 版本一致
 
 ```bash
+N8N_VERSION=2.4.6
+docker pull n8nio/runners:${N8N_VERSION}
+
 docker volume create n8n_data
+docker network create n8n-net 2>/dev/null || true
 ```
 
 停止并移除旧容器（如果存在）：
 
 ```bash
 docker rm -f n8n 2>/dev/null || true
+docker rm -f n8n-main 2>/dev/null || true
+docker rm -f n8n-runners 2>/dev/null || true
 ```
 
-启动新容器（端口 5678，对外提供 n8n Web UI）：
+生成共享密钥（n8n 与 runners 必须一致）：
+
+```bash
+TOKEN="$(cat /proc/sys/kernel/random/uuid | sed 's/-//g')$(cat /proc/sys/kernel/random/uuid | sed 's/-//g')"
+```
+
+启动 n8n（端口 5678，对外提供 n8n Web UI；同时作为 task broker 监听 5679）：
 
 ```bash
 docker run -d \
-  --name n8n \
+  --name n8n-main \
+  --network n8n-net \
   -p 5678:5678 \
   -e TZ="Asia/Shanghai" \
   -e GENERIC_TIMEZONE="Asia/Shanghai" \
   -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
+  -e N8N_SECURE_COOKIE=false \
   -e N8N_RUNNERS_ENABLED=true \
+  -e N8N_RUNNERS_MODE=external \
+  -e N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0 \
+  -e N8N_RUNNERS_AUTH_TOKEN=${TOKEN} \
+  -e N8N_NATIVE_PYTHON_RUNNER=true \
   -v n8n_data:/home/node/.n8n \
   n8n-python:latest
+```
+
+启动 runners（旁车容器，负责 Python/JS runner 执行）：
+
+```bash
+docker run -d \
+  --name n8n-runners \
+  --network n8n-net \
+  -e N8N_RUNNERS_TASK_BROKER_URI=http://n8n-main:5679 \
+  -e N8N_RUNNERS_AUTH_TOKEN=${TOKEN} \
+  n8nio/runners:${N8N_VERSION}
 ```
 
 查看容器状态：
 
 ```bash
-docker ps --filter name=n8n --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+docker ps --filter name=n8n-main --filter name=n8n-runners --format 'table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
 ```
 
 查看日志（确认启动正常）：
 
 ```bash
-docker logs -n 100 n8n
+docker logs -n 200 n8n-main
+docker logs -n 200 n8n-runners
 ```
 
-## 6. 验证容器内 Python 可用
+## 6. 验证 Python 环境与 runners 状态
+
+验证 n8n 容器内 Python（用于 Execute Command 等）：
 
 ```bash
-docker exec n8n python --version
-docker exec n8n python -c "print('hello from python')"
+docker exec n8n-main python --version
+docker exec n8n-main python -c "print('hello from python')"
+```
+
+验证 runners 已被 n8n 注册（用于 Python Code 节点）：
+
+```bash
+docker logs -n 300 n8n-main | grep -E 'Task Broker ready|Registered runner' || true
 ```
 
 ## 7. 访问地址与安全组放行
@@ -176,3 +245,13 @@ docker exec n8n python -c "print('hello from python')"
 
 然后重新构建镜像并重启容器即可。
 
+### 8.4 Python Code 节点报错：Python runner unavailable
+
+常见原因：
+- 未启用 external mode（或未启动 `n8n-runners` 容器）
+- `n8nio/runners` 版本与 n8n 版本不一致
+- `N8N_RUNNERS_AUTH_TOKEN` 未保持一致导致 runners 无法连接 broker
+
+处理方式：
+- 按本文第 5 节以 external mode 启动 `n8n-main` 与 `n8n-runners`
+- 确保 `n8nio/runners:${N8N_VERSION}` 与 `n8n` 版本一致
