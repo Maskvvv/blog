@@ -5,7 +5,7 @@
 已验证环境（本次实际执行的服务器）：
 - 服务器：39.105.207.111（root 用户）
 - Docker：Docker Engine 27.3.1（linux/amd64）
-- n8n：2.4.6（镜像：`n8nio/n8n:latest`）
+- n8n：2.4.6（镜像：`n8nio/n8n:2.4.6`）
 - task runners：2.4.6（镜像：`n8nio/runners:2.4.6`）
 - 自定义镜像：`n8n-python:latest`
 - 部署模式：task runners external mode（双容器）
@@ -63,13 +63,39 @@ TZ_VALUE=Asia/Shanghai \
 bash /opt/n8n-python/deploy-n8n-python.sh
 ```
 
+为解决 “Task execution timed out after 60 seconds / Task request timed out after 60 seconds” 这类超时，可额外设置以下超时（单位：秒）：
+
+```bash
+EXECUTIONS_TIMEOUT=3600 \
+EXECUTIONS_TIMEOUT_MAX=7200 \
+N8N_RUNNERS_TASK_TIMEOUT=900 \
+N8N_RUNNERS_TASK_REQUEST_TIMEOUT=120 \
+N8N_RUNNERS_MAX_CONCURRENCY=2 \
+bash /opt/n8n-python/deploy-n8n-python.sh
+```
+
+为 Python Code 节点安装第三方库并放行导入（示例：OpenAI SDK），并推荐同时设置超时与并发：
+
+```bash
+EXECUTIONS_TIMEOUT=3600 \
+EXECUTIONS_TIMEOUT_MAX=7200 \
+N8N_RUNNERS_TASK_TIMEOUT=900 \
+N8N_RUNNERS_TASK_REQUEST_TIMEOUT=120 \
+N8N_RUNNERS_MAX_CONCURRENCY=2 \
+RUNNERS_PYTHON_PACKAGES="openai" \
+RUNNERS_STDLIB_ALLOW="*" \
+RUNNERS_EXTERNAL_ALLOW="openai,httpx,httpcore,anyio,pydantic,typing_extensions,sniffio,certifi,idna,h11,distro,jiter" \
+bash /opt/n8n-python/deploy-n8n-python.sh
+```
+
 ## 3. 编写 Dockerfile（n8n + Python + venv）
 
 在 `/opt/n8n-python` 下创建 `Dockerfile`：
 
 ```bash
 cat > Dockerfile <<'EOF'
-FROM n8nio/n8n:latest
+ARG N8N_VERSION
+FROM n8nio/n8n:${N8N_VERSION}
 
 USER root
 
@@ -164,10 +190,14 @@ docker run -d \
   -e GENERIC_TIMEZONE="Asia/Shanghai" \
   -e N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true \
   -e N8N_SECURE_COOKIE=false \
+  -e EXECUTIONS_TIMEOUT="3600" \
+  -e EXECUTIONS_TIMEOUT_MAX="7200" \
   -e N8N_RUNNERS_ENABLED=true \
   -e N8N_RUNNERS_MODE=external \
   -e N8N_RUNNERS_BROKER_LISTEN_ADDRESS=0.0.0.0 \
   -e N8N_RUNNERS_AUTH_TOKEN=${TOKEN} \
+  -e N8N_RUNNERS_TASK_TIMEOUT="900" \
+  -e N8N_RUNNERS_TASK_REQUEST_TIMEOUT="120" \
   -e N8N_NATIVE_PYTHON_RUNNER=true \
   -v n8n_data:/home/node/.n8n \
   n8n-python:latest
@@ -181,6 +211,8 @@ docker run -d \
   --network n8n-net \
   -e N8N_RUNNERS_TASK_BROKER_URI=http://n8n-main:5679 \
   -e N8N_RUNNERS_AUTH_TOKEN=${TOKEN} \
+  -e N8N_RUNNERS_TASK_TIMEOUT="900" \
+  -e N8N_RUNNERS_MAX_CONCURRENCY="2" \
   n8nio/runners:${N8N_VERSION}
 ```
 
