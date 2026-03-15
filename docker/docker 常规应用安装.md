@@ -48,7 +48,7 @@ docker run -d -p 8080:8080 --name tomcat -v webapps:/usr/local/tomcat/webapps -v
 ```shell
 docker run -d -p 6379:6379 –requirepass 1234567788 --name redis redis:5.0.10
 # 设置密码
-docker run --name redis -p 6380:6379 -d redis --requirepass "1234567788"
+docker run --name redis -p 6380:6379 -d redis:5.0.10 --requirepass "1234567788"
 ```
 
 ```shell
@@ -130,10 +130,11 @@ docker run -d -p 15672:15672 -p 5672:5672 --restart=always --name rabbitmq-delay
 docker run -d -p 27017:27017 --name mongo mongo:5.0.5
 ```
 
-# Dubbo
+# Zookeeper
 
 ```shell
 docker run -d -p 21810:2181 --name zookeeper zookeeper:3.4.14
+docker run -p 21810:2181 -v /docker/zk/data:/data -v /home/zk/log:/datalog --env TZ=Asia/Shanghai --name zk zookeeper:3.4.14
 ```
 
 # RocketMQ
