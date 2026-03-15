@@ -46,7 +46,7 @@ docker run -d -p 8080:8080 --name tomcat -v webapps:/usr/local/tomcat/webapps -v
 # 部署 redis
 
 ```shell
-docker run -d -p 6379:6379 –requirepass 1234567788 --name redis redis:5.0.10
+docker run -d -p 6379:6379 -v --name redis redis:5.0.10
 # 设置密码
 docker run --name redis -p 6380:6379 -d redis:5.0.10 --requirepass "1234567788"
 ```
@@ -218,5 +218,77 @@ docker rm -f solr
 
 # 本地挂载目录启动solr
 docker run -d -p 8983:8983 --name solr -v /solr:/opt/solr -t solr:8.1.1
+```
+
+# zookeeper
+
+
+
+```shell
+docker run -d \
+  --name zookeeper \
+  -p 2181:2181 \
+  -e TZ="Asia/Shanghai" \
+  -v /Users/mask/docker/volumes/zookeeper/data:/data \
+  -v /Users/mask/docker/volumes/zookeeper/logs:/logs \
+  -v /Users/mask/docker/volumes/zookeeper/conf:/conf \
+  --restart always \
+  zookeeper:3.8
+  
+  
+  
+  
+  
+docker run --rm -it ksprojects/zkcopy \
+  --source apibeta.zk01.ticketebay.com:2181/ \
+  --target localhost:2181/
+```
+
+
+
+# n8n
+
+Dockerfile
+
+```
+FROM node:20-bullseye-slim
+
+# 配 apt 镜像
+RUN sed -i 's|deb.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list \
+ && sed -i 's|security.debian.org|mirrors.aliyun.com|g' /etc/apt/sources.list
+
+# 安装 Python
+RUN apt-get update \
+ && apt-get install -y python3 python3-pip \
+ && rm -rf /var/lib/apt/lists/*
+
+# 配置 npm 镜像
+RUN npm config set registry https://registry.npmmirror.com
+
+# 安装 n8n
+RUN npm install -g n8n
+
+# 创建运行用户
+RUN useradd -m nodeuser
+USER nodeuser
+WORKDIR /home/nodeuser
+
+EXPOSE 5678
+CMD ["n8n"]
+
+
+```
+
+构建
+
+```
+docker build -t n8n-with-python .
+
+```
+
+
+
+```shell
+docker run -d --name n8n -p 5678:5678 -e N8N_SECURE_COOKIE=false -e TZ=Asia/Shanghai -e N8N_TIMEZONE=Asia/Shanghai -v n8n_data:/home/node/.n8n n8n-with-python
 ```
 
