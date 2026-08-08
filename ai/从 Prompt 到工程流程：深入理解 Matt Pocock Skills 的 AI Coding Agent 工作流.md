@@ -27,6 +27,9 @@
 - 如何安装
 - setup 初始化生成文件的意义
 - 如何构建自己的 AI 开发流程
+- 完整技能地图：ask-matt 与流程体系
+- 工单机制：Status 流转与任务指定
+- 企业级扩展：设计评审文档
 
 ------
 
@@ -804,33 +807,42 @@ AI 会使用：
 
 ```
 .scratch/
-
-001-login-bug.md
-
-002-add-payment.md
+└── refund-feature/
+    ├── spec.md
+    └── issues/
+        ├── 01-create-refund-table.md
+        └── 02-refund-state-machine.md
 ```
+
+一个功能一个目录。
+
+每张工单一个文件，绝不合成一个大文件。
 
 ------
 
 # 十七、triage-labels.md
 
-定义任务分类。
+定义任务的分诊状态。
 
-例如：
+默认五个标签：
 
 ```
-bug
-
-feature
-
-refactor
-
-docs
-
-question
+needs-triage      等待维护者评估
+needs-info        等待报告者补充信息
+ready-for-agent   已完全明确，AI Agent 可直接领走执行
+ready-for-human   需要人来实施
+wontfix           不会处理
 ```
 
-保证 AI 分类一致。
+注意：
+
+它们不是 "bug / feature" 这类分类标签。
+
+而是：
+
+> 分诊状态。
+
+描述一个任务当前能不能被领走执行。
 
 ------
 
@@ -916,6 +928,28 @@ Service
 Repository
 ```
 
+实际上，在 Matt Skills 中，
+
+CONTEXT.md 更核心的角色是：
+
+> 项目领域词汇表（glossary）。
+
+每个词条固定格式：
+
+术语 + 定义 + 禁用同义词（Avoid）。
+
+例如：
+
+```
+**退款单**：
+已支付订单退款成功后生成的退款记录。
+_Avoid_：退款单、退款流水
+```
+
+目的：
+
+让人和 AI、文档和会话之间用词一致。
+
 ------
 
 ## ADR
@@ -940,9 +974,463 @@ docs/adr/
 
 为什么这么做。
 
+另外注意 ADR 的布局：
+
+> 扁平、按序号排，不按功能分子目录。
+
+因为 ADR 记录的是"难以反悔的决定"。
+
+跨越所有功能持续生效。
+
+唯一的例外是多上下文仓库：
+
+根目录有 CONTEXT-MAP.md 时，
+
+每个上下文有自己的 src/<context>/docs/adr/。
+
 ------
 
-# 二十、最终理解
+# 二十、完整技能地图：不止五个技能
+
+前面只介绍了主干。
+
+Matt Skills 其实是一张完整的地图。
+
+还有一个专门的路由技能：
+
+> ask-matt
+
+不知道用哪个技能时，问它。
+
+## 主流程（idea → ship）
+
+```
+grill-with-docs
+
+↓
+
+to-spec
+
+↓
+
+to-tickets
+
+↓
+
+implement
+
+↓
+
+code-review
+```
+
+## 入口（on-ramps）
+
+三种会"生成工作"的起点：
+
+```
+triage
+
+处理堆积的外来 bug / 需求单
+
+
+diagnosing-bugs
+
+诊断难缠的 bug
+
+先建立紧密反馈循环，再谈理论
+
+
+wayfinder
+
+为大而模糊的项目绘制路线图
+
+产出的是决策，不是交付物
+```
+
+## 代码库健康
+
+```
+improve-codebase-architecture
+
+有空时扫描代码库
+
+发现"深化机会"
+```
+
+## 词汇层
+
+运行在所有技能底下的两份词汇表：
+
+```
+domain-modeling
+
+管理 CONTEXT.md 的领域术语
+
+
+codebase-design
+
+深模块设计词汇
+
+接口、缝隙、深度
+```
+
+## 独立技能
+
+```
+prototype
+
+用一次性原型回答设计问题
+
+
+research
+
+把调研工作委托给后台 agent
+
+
+handoff
+
+写可移植的交接文档
+
+
+resolving-merge-conflicts
+
+解决合并冲突
+
+
+wizard
+
+为"只有人能做的步骤"生成交互脚本
+
+
+wait-what
+
+让 AI 用你听得懂的话重说一遍
+```
+
+## 阶段边界
+
+两个阶段之间，有五个选项：
+
+```
+继续
+
+清空上下文（/clear）
+
+写交接文档（/handoff）
+
+派子代理（subagent）
+
+压缩上下文（/compact）
+```
+
+默认是 compact。
+
+最先排除的应该是"继续"。
+
+------
+
+# 二十一、本地工单的真实结构
+
+每张工单一个文件。
+
+从 01 开始编号，按依赖顺序排。
+
+固定模板：
+
+```markdown
+# 01 — 创建退款表
+
+**What to build:** 从用户视角描述的端到端行为
+
+**Blocked by:** None — can start immediately
+
+**Status:** ready-for-agent
+
+- [ ] 验收标准 1
+- [ ] 验收标准 2
+```
+
+三个关键点：
+
+工单是"曳光弹"式的垂直切片。
+
+每一刀都切穿所有层：
+
+```
+schema
+
+API
+
+UI
+
+测试
+```
+
+而不是按层做水平拆分。
+
+完成的切片必须可以独立演示或验证。
+
+------
+
+# 二十二、Status 流转：谁写 ready-for-agent，谁消费它
+
+这是整套机制里最容易误解的一点。
+
+## 写入端：自动
+
+```
+to-spec
+
+写完 spec 后自动打上 ready-for-agent
+
+
+to-tickets
+
+每张工单生成时就带 ready-for-agent
+
+
+triage
+
+外来的 raw issue 评估合格后移入 ready-for-agent
+```
+
+注意：
+
+to-tickets 产出的工单已经是 agent-ready。
+
+不要再过 triage。
+
+## 消费端：手动
+
+implement 不会自动扫描 ready-for-agent 的工单。
+
+它在等你把工单递过去：
+
+```
+实现 .scratch/refund-feature/issues/01-create-refund-table.md
+```
+
+官方的说法是：
+
+> work the frontier, blockers-first, by hand
+
+本地 markdown 工单没有后台进程。
+
+把选取权留给人，正好配合依赖顺序的控制。
+
+不过这套约定是机器可读的：
+
+Status 行 + Blocked by 行，
+
+足够让 agent 自己算出执行顺序。
+
+想要自动批量执行时，下这样的指令即可。
+
+------
+
+# 二十三、运行每个技能时，需要明确指定任务吗？
+
+分情况：
+
+| 技能 | 是否需要指定 |
+| --- | --- |
+| to-spec | 不需要，直接综合当前对话 |
+| to-tickets | 一般不需要，吃同一会话的上下文 |
+| implement | 需要，给工单路径或编号 |
+| code-review | 需要给对比基准，spec 会按顺序自动查找 |
+
+code-review 查找 spec 的顺序：
+
+```
+1. commit message 里的 issue 引用
+
+2. 用户传入的路径
+
+3. .scratch/ 下匹配分支名的 spec 文件
+
+4. 都找不到，问用户
+```
+
+由此得到 Matt 的"上下文管理"建议：
+
+```
+grill → to-spec → to-tickets
+
+留在同一个上下文窗口
+
+
+每个 implement
+
+新开会话，只带一张工单
+
+
+工单之间
+
+/clear
+```
+
+------
+
+# 二十四、工单完成后，Status 会变吗？
+
+默认不会。
+
+implement 的收尾动作是：
+
+```
+跑测试
+
+↓
+
+code-review
+
+↓
+
+commit 到当前分支
+```
+
+完成信号是那个 commit，不是状态变更。
+
+更根本的原因：
+
+五个分诊标签里本来就没有 "done"。
+
+它们描述的是"能不能被领走"，不是生命周期。
+
+想在本地追踪完成情况，可以自己定约定：
+
+```
+验收标准勾选为 - [x]
+
+**Status:** 改为 done
+
+## Comments 里记录 commit hash
+```
+
+把这条约定写进 docs/agents/issue-tracker.md。
+
+所有技能开工前都读这份文档。
+
+以后 implement 收尾时就会自动执行。
+
+------
+
+# 二十五、企业级扩展：设计评审文档的缺口
+
+企业开发中通常有技术设计评审：
+
+```
+接口文档
+
+数据库设计 / ER 图
+
+流程图 / 时序图
+
+详细设计
+```
+
+Matt Skills 的流程不产出这些。
+
+而且是刻意不产出：
+
+> avoid specific file paths or code snippets — they go stale fast
+
+它隐含了一个假设：
+
+> 审批人就是坐在对话里的你。
+
+企业评审打破了这个假设：
+
+评审人不在上下文窗口里。
+
+他们需要一份自包含的、可离线阅读的快照。
+
+## 建议：to-tickets 之后生成评审文档
+
+此时时机最好：
+
+spec、tickets 和所有决策的"为什么"都还在同一个上下文里。
+
+综合成文档的成本最低。
+
+但有三个坑：
+
+```
+1. 细节缺口
+
+评审需要的 DDL、接口签名并不在 spec 里
+
+必须从代码库现状推导，或显式标注"待定"
+
+不允许凭空发明
+
+
+2. 快照 vs 活文档
+
+评审通过后冻结版本
+
+不要让 implement 去维护它
+
+
+3. 格式每次重述
+
+把模板固化成自定义技能
+```
+
+## 建议的技能形态：/to-design-doc
+
+```
+输入：
+
+spec + tickets + ADR + 代码库探索
+
+
+输出：
+
+docs/design/<feature>.md
+
+顶部 Status: draft / approved
+
+
+图表：
+
+Mermaid
+
+可 diff、可版本化
+
+
+硬约束：
+
+术语用 CONTEXT.md 的词
+
+每个章节标注来源
+
+无法确定的进"待定项"清单
+
+
+门禁：
+
+Status 变为 approved 之前
+
+不允许开始 /implement
+```
+
+最后建议分级：
+
+```
+小功能：跳过
+
+中等功能：只出接口 + 数据库部分
+
+大功能：完整版
+```
+
+否则流程会把自己压死。
+
+------
+
+# 二十六、最终理解
 
 Matt Pocock Skills 的核心不是：
 
